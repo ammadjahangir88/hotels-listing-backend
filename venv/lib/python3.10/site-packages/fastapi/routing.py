@@ -24,7 +24,8 @@ from typing import (
     Union,
 )
 
-from fastapi import params
+from annotated_doc import Doc
+from fastapi import params, temp_pydantic_v1_params
 from fastapi._compat import (
     ModelField,
     Undefined,
@@ -76,7 +77,7 @@ from starlette.routing import (
 from starlette.routing import Mount as Mount  # noqa
 from starlette.types import AppType, ASGIApp, Lifespan, Receive, Scope, Send
 from starlette.websockets import WebSocket
-from typing_extensions import Annotated, Doc, deprecated
+from typing_extensions import Annotated, deprecated
 
 if sys.version_info >= (3, 13):  # pragma: no cover
     from inspect import iscoroutinefunction
@@ -307,7 +308,9 @@ def get_request_handler(
 ) -> Callable[[Request], Coroutine[Any, Any, Response]]:
     assert dependant.call is not None, "dependant.call must be a function"
     is_coroutine = iscoroutinefunction(dependant.call)
-    is_body_form = body_field and isinstance(body_field.field_info, params.Form)
+    is_body_form = body_field and isinstance(
+        body_field.field_info, (params.Form, temp_pydantic_v1_params.Form)
+    )
     if isinstance(response_class, DefaultPlaceholder):
         actual_response_class: Type[Response] = response_class.value
     else:
